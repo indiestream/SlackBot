@@ -1,7 +1,7 @@
 {
   "COMMENT": "This is the configuration file for the Slackbot Demo",
   "TAG": "slackbot ",
-  "BOT_KEY": "xoxb-616745507316-619524158967-Z8ifbAmmdEqF4eQnzJV75g3I",
+  "BOT_KEY": "xoxb-616745507316-619524158967-8RNEiafxbPx9rWBuojRHcPXy",
   "BOT_NAME": "streambot",
   "CHANNEL_ID": "CHZBQHC3T"
 }

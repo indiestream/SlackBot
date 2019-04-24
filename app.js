@@ -1,12 +1,6 @@
 /**
  *
- *
- * Main Classes:
- *
- *   => controller - This is the Slack API event broadcaster
- *   => bot - This is our bot object used to connect to the API
- *   => process - The event listening for core
- *   => helper programs - Various programs to reduce duplicate code
+ *  See LICENSE file
  *
  */
 
@@ -18,15 +12,25 @@ var os = require('os');
 var process = require('process');
 var util = require('util');
 
+
+// Part 2.) Load the config.json file and setup setting.s
 // Setup the configuration manager
 nconf.argv().env();
 nconf.file('conf/config.json');
 nconf.save(); // Create the initial file if it hasn't been.
 
 
-var channelID = nconf.get('CHANNEL_ID');
-var TAG = nconf.get('TAG');
+const TAG = nconf.get('TAG');
+const channelID = nconf.get('CHANNEL_ID');
+const botKey = nconf.get('BOT_KEY');
+const botName = nconf.get('BOT_NAME');
 
+
+
+// --------------------------------------------------------------------- controller
+
+// Instance the Slack.com api connection controller
+var controller = Botkit.slackbot();
 
 // Current conversation
 var theConvo = null;
@@ -34,10 +38,25 @@ var inConvo = false;
 var theMessage = null;
 
 
-// --------------------------------------------------------------------- controller
 
-// Instance the Slack.com api connection controller
-var controller = Botkit.slackbot();
+
+// --------------------------------------------------------------------- bot
+
+var bot = controller.spawn({ token: botKey, name: botName });
+
+bot.startRTM(function( err, bot, payload ) {
+
+  if(err)
+  {
+  	console.info(TAG + ' Could not connect to Slack');
+  }
+
+  console.info(TAG + ' Slackbot connected.');
+
+});
+
+
+
 
 // If a user sends the bot a message directly. Not currently used.
 controller.on('direct_message', function(bot, message) {
@@ -157,22 +176,6 @@ controller.hears(['uptime','identify yourself','who are you','what is your name'
 
 
 
-// --------------------------------------------------------------------- bot
-
-var bot = controller.spawn({ token: nconf.get('BOT_KEY'), name: nconf.get('BOT_NAME') });
-
-bot.startRTM(function( err, bot, payload ) {
-
-  if(err)
-  {
-  	console.info(TAG + ' Could not connect to Slack');
-  }
-
-  console.info(TAG + ' Slackbot connected.');
-
-});
-
-
 
 
 
@@ -226,6 +229,7 @@ function _onErrorSay(err, res) {
 		console.error(TAG + ' SlackAPI - unable to speak.');
 	}
 }
+
 
 
 // --------------------------------------------------------------------- helper functions
