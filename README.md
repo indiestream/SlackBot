@@ -1,6 +1,5 @@
 SlackBot Demo v1.0
 Slack ChatBot Demo
-https://github.com/indiestream/SlackBot
 ====================================
 
 
