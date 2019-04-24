@@ -1,0 +1,21 @@
+{
+  "name": "slackbot",
+  "version": "1.0.0",
+  "description": "Sample SlackBot.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "slack.com",
+    "slackbot",
+  ],
+  "author": "Peter Couture",
+  "license": "ISC",
+  "dependencies": {
+    "botkit": "^0.7.4",
+    "nconf": "^0.10.0",
+    "process": "^0.11.10",
+    "redis": "^2.8.0"
+  }
+}
