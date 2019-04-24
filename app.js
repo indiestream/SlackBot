@@ -13,8 +13,8 @@ var process = require('process');
 var util = require('util');
 
 
-// Part 2.) Load the config.json file and setup setting.s
-// Setup the configuration manager
+// ================== Part 1.) Load the config.json file and setup setting.
+
 nconf.argv().env();
 nconf.file('conf/config.json');
 nconf.save(); // Create the initial file if it hasn't been.
@@ -27,9 +27,8 @@ const botName = nconf.get('BOT_NAME');
 
 
 
-// --------------------------------------------------------------------- controller
+// ================== Part 2.) Create the Slack ChatBot API controller.
 
-// Instance the Slack.com api connection controller
 var controller = Botkit.slackbot();
 
 // Current conversation
@@ -39,8 +38,7 @@ var theMessage = null;
 
 
 
-
-// --------------------------------------------------------------------- bot
+// ================== Part 3.) Create the ChatBot
 
 var bot = controller.spawn({ token: botKey, name: botName });
 
@@ -58,7 +56,75 @@ bot.startRTM(function( err, bot, payload ) {
 
 
 
-// If a user sends the bot a message directly. Not currently used.
+// ================== Part 4.) Add the interaction logic for the ChatBot via listener/callbacks.
+
+// Example connection Open/Close callbacks.
+
+controller.on('rtm_close', function() {
+	console.info(TAG + 'Connection to Slack.com API closed.');
+  process.exit(0);
+});
+
+// When the connection to the API is open.
+controller.on('rtm_open', function() {
+
+	console.info(TAG + ' Connection to Slack.com API open.');
+	
+	bot.say({
+		text: 'Bender\'s here baby!',
+		channel: channelID
+	}, _onErrorSay );
+
+});
+
+
+// Example of a Yes/No callback chat.
+
+controller.hears(['shutdown'], 'direct_message,direct_mention,mention',function(bot, message) {
+
+  console.info(TAG + "shutdown command received from channel.");
+
+  bot.startConversation(message, function(err,convo) {
+
+    convo.ask("Are you sure you want me to shutdown?",[
+      {
+        pattern: bot.utterances.yes,
+        callback: function(response, convo) {
+          convo.say("Bye!");
+          convo.next();
+          setTimeout(function() {
+            process.exit();
+          },3000);
+        }
+      },
+      {
+        pattern: bot.utterances.no,
+        default:true,
+        callback: function(response, convo) {
+          convo.say("Shut up baby, I know it!");
+          convo.next();
+        }
+      }
+    ])
+
+  });
+
+});
+
+// System Helper Command.
+controller.hears(['uptime','identify yourself','who are you','what is your name'],'direct_message,direct_mention,mention',function(bot,message) {
+
+  var hostname = os.hostname();
+  var time = process.uptime();
+  var uptime = formatUptime(time);
+
+  bot.reply(message,':robot_face: I am a bot named <@' + bot.identity.name +'>. I have been running for ' + uptime + ' on ' + hostname + ". Timestamp: " + time, _onErrorReply);
+
+});
+
+
+
+
 controller.on('direct_message', function(bot, message) {
 
 	  console.info(TAG + ' direct message received - ' + JSON.stringify(message));
@@ -108,67 +174,7 @@ controller.on('message_received', function(bot, message) {
 
 });
 
-// When the connection to the API is closed.
-controller.on('rtm_close', function() {
-	console.info(TAG + 'Connection to Slack.com API closed.');
-  process.exit(0);
-});
 
-// When the connection to the API is open.
-controller.on('rtm_open', function() {
-
-	console.info(TAG + ' Connection to Slack.com API open.');
-	
-	bot.say({
-		text: 'Bender\'s here baby!',
-		channel: channelID
-	}, _onErrorSay );
-
-});
-
-
-// Service shutdown command via the Slack chat.
-controller.hears(['shutdown'], 'direct_message,direct_mention,mention',function(bot, message) {
-
-  console.info(TAG + "shutdown command received from channel.");
-
-  bot.startConversation(message, function(err,convo) {
-
-    convo.ask("Are you sure you want me to shutdown?",[
-      {
-        pattern: bot.utterances.yes,
-        callback: function(response, convo) {
-          convo.say("Bye!");
-          convo.next();
-          setTimeout(function() {
-            process.exit();
-          },3000);
-        }
-      },
-      {
-        pattern: bot.utterances.no,
-        default:true,
-        callback: function(response, convo) {
-          convo.say("Shut up baby, I know it!");
-          convo.next();
-        }
-      }
-    ])
-
-  });
-
-});
-
-// // A helper command.
-controller.hears(['uptime','identify yourself','who are you','what is your name'],'direct_message,direct_mention,mention',function(bot,message) {
-
-  var hostname = os.hostname();
-  var time = process.uptime();
-  var uptime = formatUptime(time);
-
-  bot.reply(message,':robot_face: I am a bot named <@' + bot.identity.name +'>. I have been running for ' + uptime + ' on ' + hostname + ". Timestamp: " + time, _onErrorReply);
-
-});
 
 
 
